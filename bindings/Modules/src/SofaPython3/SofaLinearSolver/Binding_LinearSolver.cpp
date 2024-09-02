@@ -53,10 +53,21 @@ EigenSparseMatrix toEigen<SReal>(sofa::linearalgebra::CompressedRowSparseMatrix<
                     (EigenMatrixMap::StorageIndex*)matrix.rowBegin.data(), (EigenMatrixMap::StorageIndex*)matrix.colsIndex.data(), matrix.colsValue.data());
 }
 
+//template<>
+/*EigenSparseMatrix toEigenSparse(sofa::linearalgebra::SparseMatrix<SReal>& matrix)
+{
+    return EigenMatrixMap(matrix.rows(), matrix.cols(), matrix.getColsValue().size(),
+                    (EigenMatrixMap::StorageIndex*)matrix.rowBegin.data(), (EigenMatrixMap::StorageIndex*)matrix.colsIndex.data(), matrix.colsValue.data());
+}*/
+
+
 template<class TBlock>
 void bindLinearSolvers(py::module &m)
 {
     using CRS = sofa::linearalgebra::CompressedRowSparseMatrix<TBlock>;
+    using CRSReal = sofa::linearalgebra::CompressedRowSparseMatrix<SReal>;
+    //using CRS = sofa::linearalgebra::CompressedRowSparseMatrix<SReal>;
+    using SP = sofa::linearalgebra::SparseMatrix<SReal>;
     using CRSLinearSolver = sofa::component::linearsolver::MatrixLinearSolver<CRS, sofa::linearalgebra::FullVector<SReal> >;
 
     const std::string typeName = CRSLinearSolver::GetClass()->className + CRSLinearSolver::GetCustomTemplateName();
@@ -73,6 +84,16 @@ void bindLinearSolvers(py::module &m)
         }
         return {};
     }, sofapython3::doc::linearsolver::linearSolver_A);
+
+    c.def("H", [](CRSLinearSolver& self) -> EigenSparseMatrix
+    {
+        if (CRSReal* matrix = self.getConstraintGradient())
+        {
+            // return toEigenSparse(*matrix);
+            return toEigen(*matrix);
+        }
+        return {};
+    }, sofapython3::doc::linearsolver::linearSolver_H);
 
     c.def("b", [](CRSLinearSolver& self) -> Vector
     {

@@ -43,6 +43,16 @@ linear_solver = root.addObject('SparseLDLSolver', template='CompressedRowSparseM
 matrix = linear_solver.A()
 )";
 
+static auto linearSolver_H =
+R"(
+Returns the global constraint gradient as a scipy sparse matrix
+
+example:
+------------
+linear_solver = root.addObject('SparseLDLSolver', template='CompressedRowSparseMatrixd')
+matrix = linear_solver.H()
+)";
+
 static auto linearSolver_b =
 R"(
 Returns the global system right hand side as a numpy array
